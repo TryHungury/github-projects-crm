@@ -14,7 +14,7 @@ export default function LoginPage() {
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
     } catch (err) {
-      alert('Невірні дані');
+      alert('Wrong data');
     }
   };
 
@@ -22,7 +22,7 @@ export default function LoginPage() {
     <form onSubmit={handleSubmit}>
       <h2>Вхід</h2>
       <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required />
-      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Пароль" required />
+      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required />
       <button type="submit">Увійти</button>
       <p>Немає акаунта? <Link to="/register">Зареєструватись</Link></p>
     </form>
