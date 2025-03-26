@@ -122,5 +122,10 @@ GITHUB_TOKEN=your_github_token
 JWT_SECRET=your_jwt_secret
 ```
 
+🖼️ Screenshots
+DATEBASE
+![alt text](image.png)
+![alt text](image-1.png)
+
 ### Made by Bohdan ✌️
 This is a test project built for a full-stack position.
