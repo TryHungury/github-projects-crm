@@ -2,30 +2,56 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { Project } from '../types/Project';
+import {
+  Button,
+  Card,
+  Input,
+  List,
+  Space,
+  Typography,
+  message,
+  Layout,
+  Spin,
+} from 'antd';
+
+const { Title, Text, Link } = Typography;
+const { Header, Content } = Layout;
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [newRepo, setNewRepo] = useState('');
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [addingRepo, setAddingRepo] = useState(false);
   const navigate = useNavigate();
 
+  const fetchProjects = async () => {
+    try {
+      const res = await API.get('/projects');
+      setProjects(res.data);
+    } catch {
+      message.error('Not authorized');
+      navigate('/');
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
+
   useEffect(() => {
-    API.get('/projects')
-      .then(res => setProjects(res.data))
-      .catch(() => {
-        alert('Not authorized');
-        navigate('/');
-      });
+    fetchProjects();
   }, []);
 
   const handleAdd = async () => {
     if (!newRepo.trim()) return;
+    setAddingRepo(true);
     try {
       await API.post('/projects', { path: newRepo.trim() });
       setNewRepo('');
-      const res = await API.get('/projects');
-      setProjects(res.data);
-    } catch (err) {
-      alert('Failed to add repository');
+      await fetchProjects();
+      message.success('Repository added!');
+    } catch {
+      message.error('Failed to add repository');
+    } finally {
+      setAddingRepo(false);
     }
   };
 
@@ -33,8 +59,9 @@ export default function Dashboard() {
     try {
       await API.delete(`/projects/${id}`);
       setProjects(prev => prev.filter(p => p.id !== id));
+      message.success('Project deleted');
     } catch {
-      alert('Failed to delete');
+      message.error('Failed to delete');
     }
   };
 
@@ -44,30 +71,56 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>GitHub Projects</h2>
+    <Layout style={{ minHeight: '100vh' }}>
+      <Header style={{ background: '#001529', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Title level={3} style={{ color: '#fff', margin: 0 }}>GitHub Projects</Title>
+        <Button type="primary" danger onClick={handleLogout}>
+          Logout
+        </Button>
+      </Header>
 
-      <div>
-        <input
-          type="text"
-          value={newRepo}
-          onChange={e => setNewRepo(e.target.value)}
-          placeholder="e.g. facebook/react"
-        />
-        <button onClick={handleAdd}>Add</button>
-        <button onClick={handleLogout}>Logout</button>
-      </div>
+      <Content style={{ padding: '2rem' }}>
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Space.Compact style={{ width: '100%' }}>
+            <Input
+              value={newRepo}
+              onChange={e => setNewRepo(e.target.value)}
+              placeholder="e.g. facebook/react"
+              disabled={addingRepo}
+            />
+            <Button type="primary" onClick={handleAdd} loading={addingRepo}>
+              Add
+            </Button>
+          </Space.Compact>
 
-      <ul>
-        {projects.map(p => (
-          <li key={p.id} style={{ marginTop: '1rem' }}>
-            <strong>{p.owner}/{p.name}</strong><br />
-            ⭐ {p.stars} | 🍴 {p.forks} | 🐞 {p.issues} | 🕒 {p.createdAt}<br />
-            🔗 <a href={p.url} target="_blank" rel="noreferrer">{p.url}</a><br />
-            <button onClick={() => handleDelete(p.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+          {loadingProjects ? (
+            <Spin size="large" style={{ display: 'block', margin: '2rem auto' }} />
+          ) : (
+            <List
+              grid={{ gutter: 16, column: 1 }}
+              dataSource={projects}
+              renderItem={p => (
+                <List.Item>
+                  <Card
+                    title={`${p.owner}/${p.name}`}
+                    extra={
+                      <Button type="primary" danger onClick={() => handleDelete(p.id)}>
+                        Delete
+                      </Button>
+                    }
+                  >
+                    <Text>⭐ Stars: {p.stars}</Text><br />
+                    <Text>🍴 Forks: {p.forks}</Text><br />
+                    <Text>🐞 Issues: {p.issues}</Text><br />
+                    <Text>🕒 Created: {p.createdAt}</Text><br />
+                    <Text>🔗 <Link href={p.url} target="_blank">{p.url}</Link></Text>
+                  </Card>
+                </List.Item>
+              )}
+            />
+          )}
+        </Space>
+      </Content>
+    </Layout>
   );
 }
