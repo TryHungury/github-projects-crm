@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/github-projects-crm/">
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
