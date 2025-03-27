@@ -1,0 +1,32 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# dotenv environment variables file
+.env
+
+# Production build
+dist/
+build/
+
+# MacOS files
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# IDE files
+.vscode/
+.idea/
+
+# Docker
+docker-compose.override.yml
+
+# Miscellaneous
+coverage/
+*.pem
+*.key
